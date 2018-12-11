@@ -3,6 +3,8 @@ import * as BooksAPI from './api/BooksAPI'
 import './App.css'
 import './components/book/BookShelf'
 import BookShelf from './components/book/BookShelf';
+import Search from './components/search/Search';
+import { Route, Link } from 'react-router-dom';
 
 class BooksApp extends React.Component {
 
@@ -11,69 +13,69 @@ class BooksApp extends React.Component {
   }
 
   componentDidMount() {
+    this.getAllBooks();
+  }
+
+  getAllBooks() {
     BooksAPI.getAll().then((books) => {
-      this.updateBooks(books);
+      this.updateStateBooks(books);
     });
   }
 
-  updateBooks(books) {
+  updateStateBooks(books) {
     this.setState(() => ({
       books
     }))
   }
 
+  changeBookShelf = (book, shelf) => {
+    try {
+      this.setState((previous) => ({
+        books: previous.books.filter(b => b.id !== book.id)
+      }))
+
+      BooksAPI.update(book, shelf).then((response) => {
+        this.getAllBooks();
+      })
+
+    } catch (exception) {
+      alert(exception);
+    }
+  }
+
   render() {
 
     const shelfs = [
-      { id: 'currentlyReading', name: 'Currently Reading' },
-      { id: 'wantToRead', name: "Want To Read" },
-      { id: 'read', name: 'Read' }
+      { id: 'currentlyReading', name: 'Currently Reading', books: this.state.books.filter(b => b.shelf === 'currentlyReading') },
+      { id: 'wantToRead', name: "Want To Read", books: this.state.books.filter(b => b.shelf === 'wantToRead') },
+      { id: 'read', name: 'Read', books: this.state.books.filter(b => b.shelf === 'read') }
     ]
-
-    if (this.state.books.length > 0) {
-      console.log(this.state.books);
-    }
 
     return (
       <div className="app">
-        {this.state.showSearchPage ? (
-          <div className="search-books">
-            <div className="search-books-bar">
-              <button className="close-search" onClick={() => this.setState({ showSearchPage: false })}>Close</button>
-              <div className="search-books-input-wrapper">
-                {/*
-                  NOTES: The search from BooksAPI is limited to a particular set of search terms.
-                  You can find these search terms here:
-                  https://github.com/udacity/reactnd-project-myreads-starter/blob/master/SEARCH_TERMS.md
 
-                  However, remember that the BooksAPI.search method DOES search by title or author. So, don't worry if
-                  you don't find a specific author or title. Every search is limited by search terms.
-                */}
-                <input type="text" placeholder="Search by title or author" />
+        <Route path='/search' render={() => (
+          <Search changeBookShelf={this.changeBookShelf}></Search>
+        )} />
 
+        <Route exact path='/' render={() => (
+          <div className="list-books">
+            <div className="list-books-title">
+              <h1>MyReads</h1>
+            </div>
+            <div className="list-books-content">
+              <div>
+                {shelfs.map((shelf) => (
+                  <BookShelf key={shelf.id} title={shelf.name} books={shelf.books}
+                    changeBookShelf={this.changeBookShelf} />
+                ))}
               </div>
             </div>
-            <div className="search-books-results">
-              <ol className="books-grid"></ol>
+            <div className="open-search">
+              <Link to='/search'>Add a book</Link>
             </div>
           </div>
-        ) : (
-            <div className="list-books">
-              <div className="list-books-title">
-                <h1>MyReads</h1>
-              </div>
-              <div className="list-books-content">
-                <div>
-                  {shelfs.map((shelf) => (
-                    <BookShelf key={shelf.id} title={shelf.name} books={this.state.books.filter(b => b.shelf === shelf.id)} />
-                  ))}
-                </div>
-              </div>
-              <div className="open-search">
-                <button onClick={() => this.setState({ showSearchPage: true })}>Add a book</button>
-              </div>
-            </div>
-          )}
+        )} />
       </div>
     )
   }
