@@ -7,7 +7,8 @@ import * as BooksAPI from '../../api/BooksAPI';
 class Search extends Component {
 
     static propTypes = {
-        changeBookShelf: PropTypes.func.isRequired
+        changeBookShelf: PropTypes.func.isRequired,
+        books: PropTypes.array.isRequired
     }
 
     state = {
@@ -18,13 +19,17 @@ class Search extends Component {
         if (!text) {
             this.updateState([]);
         } else {
-            BooksAPI.search(text).then((books) => {
-                if (Array.isArray(books)) {
-                    this.updateState(books);
-                } else {
-                    this.updateState([])
-                }                           
-            });
+            try {
+                BooksAPI.search(text).then((books) => {
+                    if (Array.isArray(books)) {
+                        this.updateState(books);
+                    } else {
+                        this.updateState([])
+                    }
+                });
+            } catch (exception) {
+                alert(`Error: ${exception}`)
+            }
         }
     }
 
@@ -34,8 +39,23 @@ class Search extends Component {
         }))
     }
 
+    changeShelf = (booksResult, books) => {
+        booksResult.map(br => {
+            const book = books.find((b => b.id === br.id));            
+            if (book) {
+                br.shelf = book.shelf;
+            }
+            return book;
+        });
+
+        return booksResult;
+    }
+
     render() {
-        const { changeBookShelf } = this.props;
+
+        const { changeBookShelf, books } = this.props;
+        const booksResult = this.changeShelf(this.state.books, books);
+
         return (
             <div className="search-books">
                 <div className="search-books-bar">
@@ -44,8 +64,8 @@ class Search extends Component {
                         <input type="text" onChange={(event) => this.searchBooks(event.target.value)} placeholder="Search by title or author" />
                     </div>
                 </div>
-                <div className="search-books-results">                
-                    <BooksGrid books={this.state.books} changeBookShelf={changeBookShelf}></BooksGrid>
+                <div className="search-books-results">
+                    <BooksGrid books={booksResult} changeBookShelf={changeBookShelf}></BooksGrid>
                 </div>
             </div>
         )

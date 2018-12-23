@@ -17,9 +17,13 @@ class BooksApp extends React.Component {
   }
 
   getAllBooks() {
-    BooksAPI.getAll().then((books) => {
-      this.updateStateBooks(books);
-    });
+    try {
+      BooksAPI.getAll().then((books) => {
+        this.updateStateBooks(books);
+      });
+    } catch (exception) {
+      alert(exception);
+    }
   }
 
   updateStateBooks(books) {
@@ -55,7 +59,7 @@ class BooksApp extends React.Component {
       <div className="app">
 
         <Route path='/search' render={() => (
-          <Search changeBookShelf={this.changeBookShelf}></Search>
+          <Search changeBookShelf={this.changeBookShelf} books={this.state.books} ></Search>
         )} />
 
         <Route exact path='/' render={() => (
