@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import BooksGrid from '../book/BooksGrid';
 import * as BooksAPI from '../../api/BooksAPI';
+import { Debounce } from 'react-throttle';
 
 class Search extends Component {
 
@@ -16,7 +17,7 @@ class Search extends Component {
     }
 
     searchBooks = (text) => {
-        if (!text) {
+        if (!text || text === '') {
             this.updateState([]);
         } else {
             try {
@@ -41,7 +42,7 @@ class Search extends Component {
 
     changeShelf = (booksResult, books) => {
         booksResult.map(br => {
-            const book = books.find((b => b.id === br.id));            
+            const book = books.find((b => b.id === br.id));
             if (book) {
                 br.shelf = book.shelf;
             }
@@ -61,7 +62,9 @@ class Search extends Component {
                 <div className="search-books-bar">
                     <Link className='close-search' to='/'>Close</Link>
                     <div className="search-books-input-wrapper">
-                        <input type="text" onChange={(event) => this.searchBooks(event.target.value)} placeholder="Search by title or author" />
+                        <Debounce time="200" handler="onChange">
+                            <input type="text" onChange={(event) => this.searchBooks(event.target.value)} placeholder="Search by title or author" />
+                        </Debounce>
                     </div>
                 </div>
                 <div className="search-books-results">
@@ -71,6 +74,5 @@ class Search extends Component {
         )
     }
 }
-
 
 export default Search;
