@@ -16,13 +16,12 @@ class BooksApp extends React.Component {
     this.getAllBooks();
   }
 
-  getAllBooks() {
+  async getAllBooks() {
     try {
-      BooksAPI.getAll().then((books) => {
-        this.updateStateBooks(books);
-      });
+      const books = await BooksAPI.getAll();      
+      this.updateStateBooks(books);      
     } catch (exception) {
-      alert(exception);
+      alert(`Error: ${exception}`)
     }
   }
 
@@ -32,18 +31,15 @@ class BooksApp extends React.Component {
     }))
   }
 
-  changeBookShelf = (book, shelf) => {
+  changeBookShelf = async (book, shelf) => {
     try {
       this.setState((previous) => ({
         books: previous.books.filter(b => b.id !== book.id)
       }))
-
-      BooksAPI.update(book, shelf).then((response) => {
-        this.getAllBooks();
-      })
-
+      await BooksAPI.update(book, shelf);
+      this.getAllBooks();      
     } catch (exception) {
-      alert(exception);
+      alert(`Error: ${exception}`)
     }
   }
 

@@ -25,7 +25,7 @@ const ListBooks = props => {
     );
 }
 
-ListBooks.PropTypes = {
+ListBooks.propTypes = {
     shelfs: PropTypes.array.isRequired,
     changeBookShelf: PropTypes.func.isRequired
 }

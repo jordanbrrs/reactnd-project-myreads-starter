@@ -16,18 +16,17 @@ class Search extends Component {
         books: []
     }
 
-    searchBooks = (text) => {
+    searchBooks = async (text) => {
         if (!text || text === '') {
             this.updateState([]);
         } else {
             try {
-                BooksAPI.search(text).then((books) => {
-                    if (Array.isArray(books)) {
-                        this.updateState(books);
-                    } else {
-                        this.updateState([])
-                    }
-                });
+                const books = await BooksAPI.search(text);
+                if (Array.isArray(books)) {
+                    this.updateState(books);
+                } else {
+                    this.updateState([])
+                }
             } catch (exception) {
                 alert(`Error: ${exception}`)
             }
